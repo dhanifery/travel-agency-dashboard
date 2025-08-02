@@ -15,6 +15,6 @@ const client = new Client()
 
 const account = new Account(client);
 const database = new Databases(client);
-const strorage = new Storage(client);
+const storage = new Storage(client);
 
-export { client, account, database, strorage };
+export { client, account, database, storage };
