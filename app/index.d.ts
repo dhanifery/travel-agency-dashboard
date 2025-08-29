@@ -150,6 +150,7 @@ declare interface InfoPillProps {
 
 declare interface TripFormData {
   country: string;
+  city: string;
   travelStyle: string;
   interest: string;
   budget: string;

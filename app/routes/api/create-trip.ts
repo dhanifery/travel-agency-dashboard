@@ -7,6 +7,7 @@ import { parseMarkdownToJson } from "~/lib/utils";
 export const action = async ({ request }: ActionFunctionArgs) => {
   const {
     country,
+    city, // ✅ Tambahan city
     numberOfDays,
     travelStyle,
     interests,
@@ -19,7 +20,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const unsplashApiKey = process.env.UNSPLASH_ACCESS_KEY!;
 
   try {
-    const prompt = `Generate a ${numberOfDays}-day travel itinerary for ${country} based on the following user information:
+    const prompt = `Generate a ${numberOfDays}-day travel itinerary for ${city}, ${country} based on the following user information:
       Budget: '${budget}'
       Interests: '${interests}'
       TravelStyle: '${travelStyle}'
@@ -33,6 +34,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       "budget": "${budget}",
       "travelStyle": "${travelStyle}",
       "country": "${country}",
+      "city": "${city}", 
       "interests": ${interests},
       "groupType": "${groupType}",
       "bestTimeToVisit": [
@@ -48,14 +50,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         '❄️ Season: temperature range in Celsius (temperature range in Fahrenheit)'
       ],
       "location": {
-        "city": "name of the city or region",
+        "city": "${city}",
+        "country": "${country}",
         "coordinates": [latitude, longitude],
         "openStreetMap": "link to open street map"
       },
       "itinerary": [
       {
         "day": 1,
-        "location": "City/Region Name",
+        "location": "${city}",
         "activities": [
           {"time": "Morning", "description": "🏰 Visit the local historic castle and enjoy a scenic walk"},
           {"time": "Afternoon", "description": "🖼️ Explore a famous art museum with a guided tour"},
@@ -73,7 +76,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const trip = parseMarkdownToJson(textResult.response.text());
 
     const imageResponse = await fetch(
-      `https://api.unsplash.com/search/photos?query=${country} ${interests} ${travelStyle}&client_id=${unsplashApiKey}`
+      `https://api.unsplash.com/search/photos?query=${city} ${country} ${interests} ${travelStyle}&client_id=${unsplashApiKey}`
     );
 
     const imageUrls = (await imageResponse.json()).results

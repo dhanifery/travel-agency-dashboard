@@ -35,6 +35,7 @@ const CreateTrip = ({ loaderData }: Route.ComponentProps) => {
 
   const [formData, setFormData] = useState<TripFormData>({
     country: countries[0]?.name || "",
+    city: "", // ✅ Tambahan
     travelStyle: "",
     interest: "",
     budget: "",
@@ -42,8 +43,27 @@ const CreateTrip = ({ loaderData }: Route.ComponentProps) => {
     groupType: "",
   });
 
+  const [cities, setCities] = useState<string[]>([]); // ✅ Tambahan
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // ✅ Tambahan: fungsi fetch kota
+  const fetchCities = async (countryName: string) => {
+    try {
+      const res = await fetch(
+        "https://countriesnow.space/api/v0.1/countries/cities",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ country: countryName }),
+        }
+      );
+      const data = await res.json();
+      if (data.data) setCities(data.data);
+    } catch (error) {
+      console.error("Error fetching cities:", error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -51,6 +71,7 @@ const CreateTrip = ({ loaderData }: Route.ComponentProps) => {
 
     if (
       !formData.country ||
+      !formData.city || // ✅ Validasi city
       !formData.travelStyle ||
       !formData.interest ||
       !formData.budget ||
@@ -79,6 +100,7 @@ const CreateTrip = ({ loaderData }: Route.ComponentProps) => {
         headers: { "Content-type": "application/json" },
         body: JSON.stringify({
           country: formData.country,
+          city: formData.city, // ✅ ikut dikirim
           numberOfDays: formData.duration,
           travelStyle: formData.travelStyle,
           interests: formData.interest,
@@ -138,6 +160,7 @@ const CreateTrip = ({ loaderData }: Route.ComponentProps) => {
               change={(e: { value: string | undefined }) => {
                 if (e.value) {
                   handleChange("country", e.value);
+                  fetchCities(e.value); // ✅ fetch kota setelah pilih negara
                 }
               }}
               allowFiltering
@@ -157,6 +180,34 @@ const CreateTrip = ({ loaderData }: Route.ComponentProps) => {
               }}
             />
           </div>
+
+          {/* ✅ ComboBox City */}
+          {cities.length > 0 && (
+            <div>
+              <label htmlFor="city">City</label>
+              <ComboBoxComponent
+                id="city"
+                dataSource={cities.map((city) => ({ text: city, value: city }))}
+                fields={{ text: "text", value: "value" }}
+                placeholder="Select a City"
+                className="combo-box"
+                change={(e: { value: string | undefined }) => {
+                  if (e.value) {
+                    handleChange("city", e.value);
+                  }
+                }}
+                allowFiltering
+                filtering={(e) => {
+                  const query = e.text.toLowerCase();
+                  e.updateData(
+                    cities
+                      .filter((c) => c.toLowerCase().includes(query))
+                      .map((c) => ({ text: c, value: c }))
+                  );
+                }}
+              />
+            </div>
+          )}
 
           <div>
             <label htmlFor="duration">Duration</label>
